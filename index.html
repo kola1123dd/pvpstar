@@ -18,20 +18,9 @@
             justify-content: center;
             min-height: 100vh;
         }
-        .container {
-            text-align: center;
-            padding: 20px;
-        }
-        h1 {
-            color: #ffd700;
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        .balance {
-            font-size: 24px;
-            margin: 20px 0;
-            color: #00ffcc;
-        }
+        .container { text-align: center; padding: 20px; }
+        h1 { color: #ffd700; font-size: 32px; margin-bottom: 10px; }
+        .balance { font-size: 28px; margin: 20px 0; color: #00ffcc; }
         .btn {
             background: linear-gradient(135deg, #ffd700, #ff8c00);
             color: #000;
@@ -41,10 +30,19 @@
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
-            margin-top: 20px;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 300px;
         }
-        .btn:active {
-            transform: scale(0.95);
+        .btn:active { transform: scale(0.95); }
+        .btn-green {
+            background: linear-gradient(135deg, #00ffcc, #00cc99);
+        }
+        .result {
+            font-size: 48px;
+            margin: 20px 0;
+            color: #ffd700;
+            min-height: 60px;
         }
     </style>
 </head>
@@ -52,7 +50,11 @@
     <div class="container">
         <h1>⭐ PvPstar ⭐</h1>
         <div class="balance">Баланс: <span id="balance">0</span> ⭐</div>
-        <button class="btn" onclick="play()">🎮 Играть</button>
+        
+        <div class="result" id="result">🎲 </div>
+        
+        <button class="btn" onclick="rollDice()">🎲  Бросить кости</button>
+        <button class="btn btn-green" onclick="buyStars()">⭐ Пополнить на 10</button>
     </div>
 
     <script>
@@ -60,9 +62,24 @@
         tg.ready();
         tg.expand();
 
-        function play() {
-            tg.showAlert("Игры скоро будут здесь!");
+        let balance = 0;
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = balance;
         }
+
+        function rollDice() {
+            const num = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('result').textContent = '🎲  ' + num;
+        }
+
+        function buyStars() {
+            balance += 10;
+            updateBalance();
+            tg.showAlert("Баланс пополнен на 10 ⭐!");
+        }
+
+        updateBalance();
     </script>
 </body>
 </html>
