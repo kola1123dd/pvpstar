@@ -31,6 +31,12 @@
         .input-group input { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #ffd700; background: #1a1a2e; color: #fff; font-size: 18px; box-sizing: border-box; }
         .dice-result { font-size: 60px; margin: 20px 0; min-height: 80px; }
         .status-text { color: #00ffcc; font-size: 18px; margin: 15px 0; min-height: 25px;}
+
+        /* Стили для Лобби */
+        .lobby-title { text-align: left; color: #aaa; margin-top: 30px; margin-bottom: 10px; font-size: 14px; text-transform: uppercase;}
+        .lobby-item { background: #1a1a2e; border: 1px solid #333; border-radius: 10px; padding: 10px 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .lobby-item span { font-weight: bold; }
+        .btn-join { background: #00ffcc; color: #000; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -40,8 +46,7 @@
         <div class="container">
             <h1>⭐ PvPstar ⭐</h1>
             <button class="btn" onclick="showScreen('games-screen')">🎮 Играть</button>
-            <button class="btn btn-secondary" onclick="showScreen('profile-screen')">👤  Профиль</button>
-            <button class="btn btn-secondary" onclick="addStars()" style="font-size: 16px; padding: 10px;">+ Пополнить (тест)</button>
+            <button class="btn btn-secondary" onclick="showScreen('profile-screen')">👤  Профиль</button><button class="btn btn-secondary" onclick="addStars()" style="font-size: 16px; padding: 10px;">+ Пополнить (тест)</button>
         </div>
     </div>
 
@@ -51,7 +56,8 @@
             <img id="user-avatar" class="avatar" src="" alt="Аватарка">
             <div id="user-name" class="username">Загрузка...</div>
         </div>
-        <div class="stats"><div class="stat-row"><span>Текущий баланс:</span> <span class="stat-value" id="profile-balance">0 ⭐</span></div>
+        <div class="stats">
+            <div class="stat-row"><span>Текущий баланс:</span> <span class="stat-value" id="profile-balance">0 ⭐</span></div>
             <div class="stat-row"><span>Выиграно:</span> <span class="stat-value" id="stat-win">0 ⭐</span></div>
             <div class="stat-row"><span>Проиграно:</span> <span class="stat-value" id="stat-lose">0 ⭐</span></div>
         </div>
@@ -73,13 +79,29 @@
     <div id="dice-screen" class="screen">
         <button class="btn btn-secondary" style="margin-bottom: 20px; width: auto; padding: 10px 20px;" onclick="showScreen('games-screen')">← Назад</button>
         <h2>🎲  Кости</h2>
+        
         <div class="dice-result" id="dice-display">🎲 </div>
         <div class="status-text" id="dice-status"></div>
+
         <div class="input-group">
             <label>Твоя ставка (звёзды):</label>
             <input type="number" id="bet-input" value="1" min="1">
         </div>
-        <button class="btn" id="play-btn" onclick="findMatch()">🔍 Найти соперника</button>
+
+        <button class="btn" id="play-btn" onclick="findRandomMatch()">🔍 Найти случайного соперника</button>
+
+        <!-- Блок лобби (тест) -->
+        <div class="lobby-title">Открытые игры (Соперники)</div>
+        <div class="lobby-item">
+            <span>👤  Игрок Вася</span>
+            <span>10 ⭐</span>
+            <button class="btn-join" onclick="joinGame(10)">Играть</button>
+        </div>
+        <div class="lobby-item">
+            <span>👤  Игрок Петя</span>
+            <span>50 ⭐</span>
+            <button class="btn-join" onclick="joinGame(50)">Играть</button>
+        </div>
     </div>
 
     <script>
@@ -110,8 +132,7 @@
         function createStar() {
             const star = document.createElement('div');
             star.className = 'star';
-            star.textContent = '⭐';
-            star.style.left = Math.random() * 100 + 'vw';
+            star.textContent = '⭐';star.style.left = Math.random() * 100 + 'vw';
             star.style.animationDuration = (Math.random() * 3 + 2) + 's';
             star.style.fontSize = (Math.random() * 20 + 10) + 'px';
             document.body.appendChild(star);
@@ -134,13 +155,30 @@
                     document.getElementById('user-avatar').src = 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png';
                 }
             }
-        }loadProfile();
+        }
+        loadProfile();
         updateUI();
 
         let isSearching = false;
-        function findMatch() {
-            if (isSearching) return;
+
+        // Функция для игры по кнопке "Найти соперника" (рандом)
+        function findRandomMatch() {
             const bet = parseInt(document.getElementById('bet-input').value);
+            startGame(bet, "Поиск соперника...");
+        }
+
+        // Функция для игры из лобби (с конкретным игроком)
+        function joinGame(bet) {
+            if (bet > balance) {
+                tg.showAlert("Недостаточно звёзд для этой ставки!");
+                return;
+            }
+            startGame(bet, "Подключение к игре...");
+        }
+
+        // Основная логика игры
+        function startGame(bet, searchText) {
+            if (isSearching) return;
             if (!bet || bet < 1) return tg.showAlert("Минимальная ставка — 1 звезда!");
             if (bet > balance) return tg.showAlert("Недостаточно звёзд на балансе!");
 
@@ -149,7 +187,7 @@
             const status = document.getElementById('dice-status');
             const display = document.getElementById('dice-display');
 
-            btn.textContent = "Поиск соперника...";
+            btn.textContent = searchText;
             btn.style.opacity = "0.7";
             status.textContent = "";
             display.textContent = "🎲 ";
@@ -162,7 +200,8 @@
                     display.textContent = myRoll + " против " + oppRoll;
                     
                     if (myRoll > oppRoll) {
-                        balance += bet;
+                        // Выигрыш: получаем +ставку (свою и половину от соперника)
+                        balance += bet; 
                         wins += bet;
                         status.innerHTML = '<span style="color:#00ffcc">Ты победил! +' + bet + ' ⭐</span>';
                     } else if (myRoll < oppRoll) {
@@ -173,7 +212,7 @@
                         status.textContent = "Ничья!";
                     }
                     updateUI(); 
-                    btn.textContent = "🔍 Найти соперника";
+                    btn.textContent = "🔍 Найти случайного соперника";
                     btn.style.opacity = "1";
                     isSearching = false;
                 }, 2000);
