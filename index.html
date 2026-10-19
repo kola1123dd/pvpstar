@@ -7,54 +7,110 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f0f1a;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: #0f0f1a; color: #fff;
+            overflow-x: hidden;
             min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
         }
-        .container { text-align: center; padding: 20px; }
-        h1 { color: #ffd700; font-size: 32px; margin-bottom: 10px; }
-        .balance { font-size: 28px; margin: 20px 0; color: #00ffcc; }
+        .screen { display: none; width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box; text-align: center; }
+        .screen.active { display: block; }
+        
+        /* Звёзды */
+        .star { position: fixed; color: #ffd700; font-size: 24px; animation: fall linear infinite; pointer-events: none; z-index: 1; }
+        @keyframes fall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+        
+        .container { position: relative; z-index: 10; margin-top: 20vh; }
+        h1 { color: #ffd700; font-size: 42px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        h2 { color: #ffd700; margin-bottom: 20px; }
+        
         .btn {
-            background: linear-gradient(135deg, #ffd700, #ff8c00);
-            color: #000;
-            border: none;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
-            margin: 10px 0;
-            width: 100%;
-            max-width: 300px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000;
+            border: none; padding: 16px 40px; font-size: 20px; font-weight: bold;
+            border-radius: 12px; cursor: pointer; margin: 10px 0; width: 100%;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
         }
         .btn:active { transform: scale(0.95); }
-        .btn-green {
-            background: linear-gradient(135deg, #00ffcc, #00cc99);
+        .btn-secondary { background: transparent; border: 2px solid #ffd700; color: #ffd700; box-shadow: none; }
+        
+        /* Профиль */
+        .profile-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+        .avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #ffd700; margin-bottom: 10px; }
+        .username { font-size: 24px; font-weight: bold; }
+        .stats { background: #1a1a2e; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px; }
+        .stat-value { color: #00ffcc; font-weight: bold; }
+
+        /* Меню игр */
+        .game-card { background: #1a1a2e; border: 2px solid #ffd700; border-radius: 12px; padding: 15px; margin-bottom: 15px; cursor: pointer; }
+        .game-card:active { transform: scale(0.98); }
+        .game-title { font-size: 20px; font-weight: bold; margin-bottom: 5px; color: #ffd700; }
+        
+        /* Экран игры (Кости) */
+        .input-group { margin: 20px 0; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; color: #aaa; }
+        .input-group input {
+            width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #ffd700;
+            background: #1a1a2e; color: #fff; font-size: 18px; box-sizing: border-box;
         }
-        .result {
-            font-size: 48px;
-            margin: 20px 0;
-            color: #ffd700;
-            min-height: 60px;
-        }
+        .dice-result { font-size: 60px; margin: 20px 0; min-height: 80px; }
+        .status-text { color: #00ffcc; font-size: 18px; margin: 15px 0; min-height: 25px;}
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>⭐ PvPstar ⭐</h1>
-        <div class="balance">Баланс: <span id="balance">0</span> ⭐</div>
+    <!-- ГЛАВНЫЙ ЭКРАН -->
+    <div id="main-screen" class="screen active">
+        <div class="container">
+            <h1>⭐ PvPstar ⭐</h1>
+            <button class="btn" onclick="showScreen('games-screen')">🎮 Играть</button>
+            <button class="btn btn-secondary" onclick="showScreen('profile-screen')">👤  Профиль</button>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ПРОФИЛЯ -->
+    <div id="profile-screen" class="screen">
+        <button class="btn btn-secondary" style="margin-bottom: 20px; width: auto; padding: 10px 20px;" onclick="showScreen('main-screen')">← Назад</button>
+        <div class="profile-header">
+            <img id="user-avatar" class="avatar" src="" alt="Аватарка">
+            <div id="user-name" class="username">Загрузка...</div>
+        </div>
+        <div class="stats">
+            <div class="stat-row"><span>Пополнено:</span> <span class="stat-value">0 ⭐</span></div>
+            <div class="stat-row"><span>Выиграно:</span> <span class="stat-value">0 ⭐</span></div>
+            <div class="stat-row"><span>Проиграно:</span> <span class="stat-value">0 ⭐</span></div>
+            <div class="stat-row"><span>Игр сыграно:</span> <span class="stat-value">0</span></div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ИГР -->
+    <div id="games-screen" class="screen">
+        <button class="btn btn-secondary" style="margin-bottom: 20px; width: auto; padding: 10px 20px;" onclick="showScreen('main-screen')">← Назад</button>
+        <h2>Выбери игру</h2>
+        <div class="game-card" onclick="showScreen('dice-screen')">
+            <div class="game-title">🎲  Кости</div>
+            <div style="color: #aaa; font-size: 14px;">Брось 3 раза, у кого больше — тот победил</div>
+        </div>
+        <div class="game-card" onclick="tg.showAlert('В разработке')">
+            <div class="game-title">❌⭕ Крестики-нолики</div>
+            <div style="color: #aaa; font-size: 14px;">Классика на 3х3 (в разработке)</div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ИГРЫ "КОСТИ" -->
+    <div id="dice-screen" class="screen">
+        <button class="btn btn-secondary" style="margin-bottom: 20px; width: auto; padding: 10px 20px;" onclick="showScreen('games-screen')">← Назад</button>
+        <h2>🎲  Кости</h2>
         
-        <div class="result" id="result">🎲 </div>
-        
-        <button class="btn" onclick="rollDice()">🎲  Бросить кости</button>
-        <button class="btn btn-green" onclick="buyStars()">⭐ Пополнить на 10</button>
+        <div class="dice-result" id="dice-display">🎲 </div>
+        <div class="status-text" id="dice-status"></div>
+
+        <div class="input-group">
+            <label>Твоя ставка (звёзды):</label>
+            <input type="number" id="bet-input" value="1" min="1" max="100">
+        </div>
+
+        <button class="btn" id="play-btn" onclick="findMatch()">🔍 Найти соперника</button>
     </div>
 
     <script>
@@ -62,24 +118,88 @@
         tg.ready();
         tg.expand();
 
-        let balance = 0;
+        // --- Звёзды ---
+        function createStar() {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.textContent = '⭐';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            star.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 5000);
+        }
+        setInterval(createStar, 300);
 
-        function updateBalance() {
-            document.getElementById('balance').textContent = balance;
+        // --- Переключение экранов ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
         }
 
-        function rollDice() {
-            const num = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('result').textContent = '🎲  ' + num;
+        // --- Заполнение профиля ---
+        function loadProfile() {
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                document.getElementById('user-name').textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+                if (user.photo_url) {
+                    document.getElementById('user-avatar').src = user.photo_url;
+                } else {
+                    document.getElementById('user-avatar').src = 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png';
+                }
+            }
         }
+        loadProfile();
 
-        function buyStars() {
-            balance += 10;
-            updateBalance();
-            tg.showAlert("Баланс пополнен на 10 ⭐!");
+        // --- Логика игры в кости (тест) ---
+        let isSearching = false;
+
+        function findMatch() {
+            if (isSearching) return;
+            
+            const bet = parseInt(document.getElementById('bet-input').value);
+            if (!bet || bet < 1) {
+                tg.showAlert("Минимальная ставка — 1 звезда!");
+                return;
+            }
+
+            isSearching = true;
+            const btn = document.getElementById('play-btn');
+            const status = document.getElementById('dice-status');
+            const display = document.getElementById('dice-display');
+
+            btn.textContent = "Поиск соперника...";
+            btn.style.opacity = "0.7";
+            status.textContent = "";
+            display.textContent = "🎲 ";
+
+            // Имитация поиска (3 секунды)
+            setTimeout(() => {
+                status.textContent = "Соперник найден! Бросаем кости...";
+                
+                setTimeout(() => {
+                    // Твой бросок
+                    const myRoll = Math.floor(Math.random() * 6) + 1;
+                    // Бросок соперника
+                    const oppRoll = Math.floor(Math.random() * 6) + 1;
+                    
+                    display.textContent = `${myRoll} против ${oppRoll}`;
+
+                    if (myRoll > oppRoll) {
+                        status.innerHTML = `<span style="color:#00ffcc">Ты победил! +${bet} ⭐</span>`;
+                    } else if (myRoll < oppRoll) {
+                        status.innerHTML = `<span style="color:#ff4444">Ты проиграл! -${bet} ⭐</span>`;
+                    } else {
+                        status.textContent = "Ничья!";
+                    }
+
+                    btn.textContent = "🔍 Найти соперника";
+                    btn.style.opacity = "1";
+                    isSearching = false;
+                }, 2000);
+
+            }, 3000);
         }
-
-        updateBalance();
     </script>
 </body>
 </html>
